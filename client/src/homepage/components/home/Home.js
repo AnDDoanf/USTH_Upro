@@ -3,11 +3,7 @@ import useNavbar from '../../talons/navbar';
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 
-const initialState = {
-  name: "",
-  email: "",
-  contact: "",
-};
+
 
 const Home = (props) => {
   const talonProps = useNavbar();
