@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import './App.css';
 import worklist from './icon/worklist.svg';
 import board from './icon/board.svg';
@@ -10,8 +11,15 @@ import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import axios from 'axios';
 import { v4 as uuidv4 } from 'uuid';
 
-// Homepage
+
+// Header and Homepage
 function Homepage(props) {
+
+  const history = useNavigate();
+    const handleHomepageToProject = useCallback(()=>{
+        history('/project')
+    });
+
   const [userName, setUserName] = useState("");
 
   // 4 states below must have the same length == number of projects
@@ -42,7 +50,8 @@ function Homepage(props) {
   }, [props.userCode])
 
   const handleAccess = (a) => {
-    props.getData(a);
+    props.onSubmit(a);
+
   }
 
   function hide_dropdown(){
@@ -84,7 +93,6 @@ function Homepage(props) {
   };
   }, [dropdownRef, notificationDropdownRef]);
 
-
 return(
 <div>
   <div className="navbar">
@@ -125,7 +133,7 @@ return(
 
 {/* cards */}
       {projectNameList.map((item, index) => (
-        <div className="project-card">
+        <div className="project-card" onClick={() =>{handleAccess(projectCodeList[index]); handleHomepageToProject()}}>
           <div className="project-card-header">
             <div className="project-card-color-tag"></div>
             <p>{item}</p>
@@ -217,7 +225,20 @@ return(
 }
 
 // Header and left menu
-function App() {
+function Project(props) {
+  
+    // Get project's name
+    const [projectName, setProjectName] = useState([]);
+    useEffect(() => {
+      axios.get(`http://localhost:3001/get_project/project_code/${props.projectCode}`)
+      .then((res) => {
+        res.data.map((item, i) => (
+          setProjectName(current => [...current, item.project_name]),
+          setProjectName(current => [...new Set(current)])
+        ))
+      })
+      .catch(err => console.log(err));
+    }, [props.projectCode])
 
   const [page, setPage] = useState(1);
   
@@ -245,12 +266,18 @@ function App() {
   };
   }, [dropdownRef, notificationDropdownRef]);
 
+  // redirect to homepage
+  const history = useNavigate();
+  const handleNavbarToHomePage = useCallback(()=>{
+      history('/homepage')
+  });
+
   return (
 
     <div className="app"> 
 
       <div className="navbar">
-        <div className="logo">Upro</div>
+        <div className="logo" onClick={handleNavbarToHomePage}>Upro</div>
         <div className="search-bar"><input type="search" placeholder='Searching project...' /></div>
 
         <div className="notification" onClick={() => setNotificationDropdownOpen(!notificationDropdownOpen)}>
@@ -281,12 +308,13 @@ function App() {
           <div className="tooltip_user">profile</div>
         </div>
       </div>
+
       <div className="left-menu">
         <div className="project-icon-display">
           <div className="project-icon">
             </div>
             </div>
-        <div className="project-name-display"> <p>Group Project 2023</p></div>
+        <div className="project-name-display"> <p>{projectName}</p></div>
         <div className="project-button-container">
           <div className="worklist-button" onClick={() => handlePageChange(1)}>
             <img src={worklist} alt="" />
@@ -304,7 +332,7 @@ function App() {
       </div>
 
       <div className="right-menu">
-          {page === 1 ? <Page1Content /> : (page === 2 ? <Page2Content /> : (page === 3 ? <Page3Content/> : <Page4Content />))}
+          {page === 1 ? <Page1Content projectCode = {props.projectCode}/> : (page === 2 ? <Page2Content projectCode = {props.projectCode}/> : (page === 3 ? <Page3Content projectCode = {props.projectCode}/> : <Page4Content projectCode = {props.userCode}/>))}
         
       </div>
     </div>
@@ -314,7 +342,28 @@ function App() {
 }
 
 // Worklist/ Sprint
-function Page1Content() {
+function Page1Content(props) {
+  // get all sprint in project
+  const [sprintList, setSprintList] = useState([]);
+  useEffect(() => {
+    axios.get(`http://localhost:3001/get_sprint/project_code/${props.projectCode}`)
+    .then((res) => {
+      setSprintList(res.data)
+    })
+    .catch(err => console.log(err));
+  }, [props.projectCode])
+
+  // get all tasks in project
+  const [taskList, setTaskList] = useState([]);
+  useEffect(() => {
+    axios.get(`http://localhost:3001/get_task/project_code/${props.projectCode}`)
+    .then((res) => {
+      setTaskList(res.data);
+    })
+    .catch(err => console.log(err));
+  }, [props.projectCode])
+  console.log(taskList)
+
   const [sprints, setSprints] = useState([]);
   const [sprintInfo, setSprintInfo] = useState({name: "", startDate: "", endDate: ""});
   const handleSubmit = (e) => {
@@ -440,17 +489,16 @@ const handleDeleteIssue = (id) => {
       <div className="worklist-left">
         <h2>Work List</h2>
         <button className='create-sprint-button' onClick={() => setShowOverlay(true)}>Create Sprint</button>
-        {sprints.map((sprint) => (
+        {sprintList.map((sprint) => (
           <div key={sprint.id} id={sprint.id} className='sprint'>
-            <div className="sprint-information">
-              <p className='sprint-name'>{sprint.name}</p>
+            <div className="sprint-information">  
               <div className='start-date-container'>
                 <p className='start-date'>Start date:</p>
-                <p className='sprint-date'>{sprint.startDate}</p>
+                <p className='sprint-date'>{sprint.sprint_start_date.slice(5,7)}/{sprint.sprint_start_date.slice(8,10)}/{sprint.sprint_start_date.slice(0,4)}</p>
               </div>
               <div  className='end-date-container'>
                 <p className='end-date'>End date:</p>
-                <p className='sprint-date'>{sprint.endDate}</p>
+                <p className='sprint-date'>{sprint.sprint_start_date.slice(5,7)}/{sprint.sprint_start_date.slice(8,10)}/{sprint.sprint_start_date.slice(0,4)}</p>
               </div>
               <div className="delete-sprint-container">
                 <button className='delete-sprint-button' onClick={() => handleDeleteSprint(sprint.id)}>Delete</button>
@@ -480,10 +528,10 @@ const handleDeleteIssue = (id) => {
                   </div>
                 </div>
               )}
-              {issues.map((issue) => (
-                <div key={issue.id} id={issue.id} className='issue-card' onClick={() => handleSelectIssue(issue)}>
+              {taskList.filter(task => task.sprint_code === sprint.sprint_code).map((issue, index) => (
+                <div className='issue-card' onClick={() => handleSelectIssue(issue)}>
                   <div className="issue-card-color"></div>
-                  <div className="issue-card-title"><p>{issue.name}</p></div>
+                  <div className="issue-card-title"><p>{issue.task_name}</p></div>
                 </div>
               ))}
             </div>
@@ -514,6 +562,7 @@ const handleDeleteIssue = (id) => {
 
   );
 }
+
 //  Board
 function Page2Content() {
  
@@ -883,4 +932,8 @@ function Page4Content() {
     );
 
 }
-export default Homepage;
+
+export {
+  Homepage,
+  Project,
+}

@@ -1,17 +1,21 @@
-import React from 'react';
+import React, { useState} from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
-import Homepage from './App';
+import { Project, Homepage } from './App';
 import Login from './login/index';
 import reportWebVitals from './reportWebVitals';
 import { BrowserRouter, Routes, Route} from "react-router-dom";
-import { useState } from 'react';
 const root = ReactDOM.createRoot(document.getElementById('root'));
 
-function Project() {
+function Main() {
     const [userCode, setUserCode] = useState("");
     const getData = (data) => {
       setUserCode(data);
+    };
+
+    const [projectCode, setProjectCode] = useState("");
+    const getCode = (data) => {
+      setProjectCode(data);
     };
   
     return (
@@ -19,7 +23,8 @@ function Project() {
       <div className="App">
         <Routes>
           <Route exact path="/" element={<Login onSubmit = {getData} />}/>
-          <Route path="/homepage/*" element={<Homepage userCode = {userCode}/>}/>
+          <Route path="/homepage/*" element={<Homepage userCode = {userCode} onSubmit = {getCode}/>}/>
+          <Route path="/project/*" element={<Project projectCode = {projectCode}/>}/>
         </Routes>
       </div>
     </BrowserRouter>
@@ -27,7 +32,7 @@ function Project() {
 }
 
 root.render(
-    <Project/>
+    <Main/>
 );
 
 // If you want to start measuring performance in your app, pass a function
