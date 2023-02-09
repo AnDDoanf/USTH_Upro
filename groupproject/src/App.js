@@ -351,7 +351,7 @@ function Page1Content(props) {
       setSprintList(res.data)
     })
     .catch(err => console.log(err));
-  }, [props.projectCode])
+  })
 
   // get all tasks in project
   const [taskList, setTaskList] = useState([]);
@@ -362,18 +362,45 @@ function Page1Content(props) {
     })
     .catch(err => console.log(err));
   }, [props.projectCode])
-  console.log(taskList)
+
+  // get all tasks in project
+  const [sprintCount, setSprintCount] = useState([]);
+  useEffect(() => {
+    axios.get(`http://localhost:3001/sprint_count`)
+    .then((res) => {
+      setSprintCount(res.data.numberSprint);
+    })
+    .catch(err => console.log(err));
+  }, [])
+
+  function handleAddSprint() {
+    const nextSprint = (sprintCount+1);
+    const project = props.projectCode;
+    const count = sprints.length;
+    const startDate = sprints[count-1].startDate;
+    const dueDate = sprints[count-1].endDate;
+
+    axios.post("http://localhost:3001/add_sprint" , {
+                  project,
+                  nextSprint,
+                  startDate,
+                  dueDate
+              })
+              .catch((err) => console.log(err));
+    console.log("Add successfully");
+  } 
 
   const [sprints, setSprints] = useState([]);
-  const [sprintInfo, setSprintInfo] = useState({name: "", startDate: "", endDate: ""});
+  const [sprintInfo, setSprintInfo] = useState({startDate: "", endDate: ""});
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (sprintInfo.name === "" || sprintInfo.startDate === "" || sprintInfo.endDate === "") {
+    if (sprintInfo.startDate === "" || sprintInfo.endDate === "") {
         
         return;
     }
     setSprints([...sprints, { ...sprintInfo, id: uuidv4() }]);
-    setSprintInfo({name: "", startDate: "", endDate: ""});
+    handleAddSprint();
+    setSprintInfo({startDate: "", endDate: ""});
     setShowOverlay(false);
   }
 
@@ -381,12 +408,16 @@ function Page1Content(props) {
 
   const [showDeleteOverlay, setShowDeleteOverlay] = useState({show: false, id: ""});
 
-  const handleDeleteSprint = (id) => {
-    setShowDeleteOverlay({show: true, id});
+  const handleDeleteSprint = (sprint_code) => {  
+    setShowDeleteOverlay({show: true});
+      // DELETE request to remove data in db
+    console.log(sprint_code);
+    axios.delete(`http://localhost:3001/delete_sprint/${sprint_code}`);
+    console.log("Delete successfully");
   }
   const handleDeleteConfirm = () => {
     setSprints(sprints.filter(sprint => sprint.id !== showDeleteOverlay.id));
-    setShowDeleteOverlay({show: false, id: ""});
+    setShowDeleteOverlay({show: false});
   }
 
   const [showIssueOverlay, setShowIssueOverlay] = useState(false);
@@ -467,15 +498,13 @@ const handleDeleteIssue = (id) => {
 
               <div className="worklist-overlay-body">
                 <form onSubmit={handleSubmit}>
-                  <label htmlFor="">Sprint Name?</label>
-                  <input type="text" value={sprintInfo.name} onChange={e => setSprintInfo({...sprintInfo, name: e.target.value})} placeholder="Sprint name" />
                   <label htmlFor="">Start Date?</label>
                   <input type="date" value={sprintInfo.startDate} onChange={e => setSprintInfo({...sprintInfo, startDate: e.target.value})} placeholder="Start date"  min={new Date().toISOString().split("T")[0]}/>
                   <label htmlFor="">End Date?</label> 
                   <input type="date" value={sprintInfo.endDate} onChange={e => setSprintInfo({...sprintInfo, endDate: e.target.value})} placeholder="End date" min={sprintInfo.startDate} max={new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toISOString().split("T")[0]}/>      
                   <div className="worklist-overlay-footer">
                     <button className='worklist-overlay-button1' onClick={() => { setSprintInfo({name: "", startDate: "", endDate: ""}); setShowOverlay(false);}}>Cancel</button>
-                    <button className='worklist-overlay-button2'>Create</button>  
+                    <button type='submit' className='worklist-overlay-button2'>Create</button>  
                   </div>
                 </form>
               </div>
@@ -498,10 +527,10 @@ const handleDeleteIssue = (id) => {
               </div>
               <div  className='end-date-container'>
                 <p className='end-date'>End date:</p>
-                <p className='sprint-date'>{sprint.sprint_start_date.slice(5,7)}/{sprint.sprint_start_date.slice(8,10)}/{sprint.sprint_start_date.slice(0,4)}</p>
+                <p className='sprint-date'>{sprint.sprint_due_date.slice(5,7)}/{sprint.sprint_due_date.slice(8,10)}/{sprint.sprint_due_date.slice(0,4)}</p>
               </div>
               <div className="delete-sprint-container">
-                <button className='delete-sprint-button' onClick={() => handleDeleteSprint(sprint.id)}>Delete</button>
+                <button className='delete-sprint-button' onClick={() => handleDeleteSprint(sprint.sprint_code)}>Delete</button>
               </div>
               
             </div>
