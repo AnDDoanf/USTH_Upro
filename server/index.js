@@ -136,7 +136,7 @@ app.post("/add_member", (req, res) => {
     });
 });
     
-// Add new sprint to project (ip)
+// Add new sprint to project
 app.post("/add_sprint", (req, res) => {
     const project_code = req.body.project
     const sprint_start_date = req.body.startDate;
@@ -150,12 +150,19 @@ app.post("/add_sprint", (req, res) => {
     });
 });
 
-// Add new task to project (ip)
+// Add new task to project
 app.post("/add_task", (req, res) => {
-    const user_code = req.body.memberAdd;
-    const project_code = req.body.projectAdd;
-    const sqlAddMember = "INSERT INTO project_member (user_code, project_code) VALUES (?, ?)";
-    db.query(sqlAddMember, [user_code, project_code], (error, result) => {
+    const task_name = req.body.issueName;
+    const task_start_date = req.body.issueStartDate;
+    const task_due_date = req.body.issueDueDate;
+    const task_description = req.body.issueDescription;
+    const task_priority = req.body.issuePriority;
+    const user_code = req.body.userCode;
+    const sprint_code = req.body.curSprint;
+    const state = req.body.newIssueState;
+
+    const sqlAddTask = "INSERT INTO task (task_name, task_start_date, task_due_date, task_description, task_priority, user_code, sprint_code, state) VALUES (?,?,?,?,?,?,?,?)";
+    db.query(sqlAddTask, [task_name, task_start_date, task_due_date, task_description, task_priority, user_code,sprint_code, state], (error, result) => {
         if (error) {
             console.log(error);
         }

@@ -20,7 +20,7 @@ function Homepage(props) {
         history('/project')
     });
 
-  const [userName, setUserName] = useState("");
+  const [userName, setUserName] = useState(""); 
 
   // 4 states below must have the same length == number of projects
   const [projectNameList, setProjectNameList] = useState([]);
@@ -332,7 +332,7 @@ function Project(props) {
       </div>
 
       <div className="right-menu">
-          {page === 1 ? <Page1Content projectCode = {props.projectCode}/> : (page === 2 ? <Page2Content projectCode = {props.projectCode}/> : (page === 3 ? <Page3Content projectCode = {props.projectCode}/> : <Page4Content projectCode = {props.userCode}/>))}
+          {page === 1 ? <Page1Content projectCode = {props.projectCode} userCode = {props.userCode}/> : (page === 2 ? <Page2Content projectCode = {props.projectCode}/> : (page === 3 ? <Page3Content projectCode = {props.projectCode}/> : <Page4Content projectCode = {props.userCode}/>))}
         
       </div>
     </div>
@@ -409,39 +409,56 @@ function Page1Content(props) {
   const [showDeleteOverlay, setShowDeleteOverlay] = useState({show: false, id: ""});
 
   const handleDeleteSprint = (sprint_code) => {  
-    setShowDeleteOverlay({show: true});
-      // DELETE request to remove data in db
-    console.log(sprint_code);
-    axios.delete(`http://localhost:3001/delete_sprint/${sprint_code}`);
-    console.log("Delete successfully");
+    setShowDeleteOverlay({show: true, id: sprint_code});
   }
   const handleDeleteConfirm = () => {
-    setSprints(sprints.filter(sprint => sprint.id !== showDeleteOverlay.id));
+    // DELETE request to remove data in db
+    axios.delete(`http://localhost:3001/delete_sprint/${showDeleteOverlay.id}`);
+    console.log("Delete successfully");
     setShowDeleteOverlay({show: false});
   }
 
   const [showIssueOverlay, setShowIssueOverlay] = useState(false);
   const [issueName, setIssueName] = useState("");
+  const [issueStartDate, setIssueStartDate] = useState("");
+  const [issueDueDate, setIssueDueDate] = useState("");
+  const [issueAssignee, setIssueAssignee] = useState("");
+  const [issuePriority, setIssuePriority] = useState("");
+  const [issueDescription, setIssueDescription] = useState("");
+  const userCode = props.userCode;
+  const newIssueState = "waiting"
+  const [curSprint, setCurSprint] = useState("");
   const [issues, setIssues] = useState([]);
 
   const handleCreateIssue = () => {
     setShowIssueOverlay(true);
   }
 
-  const handleSubmitIssue = () => {
-    if(!issueName){
-      return;
-    }
-    else{
-      const newIssue = {
-        id: uuidv4(),
-        name: issueName
-    };
-    setIssues([...issues, newIssue]);
-    setIssueName("");
+  const handleSubmitIssue = (e) => {
+    e.preventDefault();
+    if (!issueName || !issueAssignee || !issueDueDate || !issueStartDate) {
+        console.log("Not enough infomations");
+    } else {
+            // POST request to create new data
+            axios.post("http://localhost:3001/add_task" , {
+              issueName,
+              issueStartDate,
+              issueDueDate,
+              issueDescription,
+              issuePriority,
+              userCode,
+              curSprint,
+              newIssueState
+            })
+            .then(() => {
+                this.name.value = "";
+                this.email.value = "";
+                this.contact.value = "";
+            })
+            .catch((err) => console.log(err));
+
     setShowIssueOverlay(false);
-    }
-    
+          }
   }
   const [selectedIssue, setSelectedIssue] = useState(null);
 
@@ -474,6 +491,7 @@ const handleDeleteIssue = (id) => {
     
     <div className="worklist-container">
 
+      {/* Delete Sprint Overlay */}
       {showDeleteOverlay.show && (
         <div className="delete-sprint-overlay">
           <div className="delete-sprint-overlay-window">
@@ -488,6 +506,7 @@ const handleDeleteIssue = (id) => {
         </div>
         )}
 
+      {/* Create Sprint Overlay */}
       {showOverlay && (
           <div className="worklist-overlay">
             <div className="worklist-overlay-window">
@@ -515,8 +534,10 @@ const handleDeleteIssue = (id) => {
           </div>
         )}
 
+      {/* List Sprint */}
       <div className="worklist-left">
         <h2>Work List</h2>
+
         <button className='create-sprint-button' onClick={() => setShowOverlay(true)}>Create Sprint</button>
         {sprintList.map((sprint) => (
           <div key={sprint.id} id={sprint.id} className='sprint'>
@@ -535,17 +556,30 @@ const handleDeleteIssue = (id) => {
               
             </div>
             <div className="sprint-card-container">
-              <button className='create-issue-button' onClick={handleCreateIssue}>Create Issue</button>
+              <button className='create-issue-button' onClick={() => {handleCreateIssue(); setCurSprint(sprint.sprint_code)}}>Create Task</button>
               {showIssueOverlay && (
                 <div className="issue-overlay">
                     <div className="issue-overlay-container">
                       <div className='issue-overlay-window'>
                         <div className="issue-overlay-header">
-                          <p>Create Issue</p>
+                          <p>Create Task</p>
                         </div>
                         <div className="issue-overlay-body">
                           <label htmlFor="">Issue Name</label>
                           <input type="text" value={issueName} onChange={e => setIssueName(e.target.value)} placeholder="Type is here..." required />
+                          <label htmlFor="">Start Date?</label>
+                          <input type="date" value={issueStartDate} onChange={e => setIssueStartDate(e.target.value)} placeholder="Start date"  min={new Date().toISOString().split("T")[0]}/>
+                          <label htmlFor="">End Date?</label> 
+                          <input type="date" value={issueDueDate} onChange={e => setIssueDueDate(e.target.value)} placeholder="End date" min={sprintInfo.startDate} max={new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toISOString().split("T")[0]}/> 
+                          <label htmlFor="">Assignee</label>
+                          <input type="text" value={issueAssignee} onChange={e => setIssueAssignee(e.target.value)} placeholder="Type is here..." required />
+                          <label htmlFor="">Priority</label>
+                          <select name="" defaultValue={"very high"} value={issuePriority} onChange={e => setIssuePriority(e.target.value)}>
+                            <option value="very high">Very High</option>
+                            <option value="high">High</option>
+                            <option value="medium">Medium</option>
+                            <option value="low">Low</option>
+                          </select>
                         </div>
                         <div className="issue-overlay-footer">
 
@@ -567,6 +601,7 @@ const handleDeleteIssue = (id) => {
           </div>
         ))}
       </div>
+
       <div className="worklist-right">
       {selectedIssue ? (
         <div>
@@ -593,8 +628,18 @@ const handleDeleteIssue = (id) => {
 }
 
 //  Board
-function Page2Content() {
+function Page2Content(props) {
  
+  // get all tasks in project
+  const [taskList, setTaskList] = useState([]);
+  useEffect(() => {
+    axios.get(`http://localhost:3001/get_task/project_code/${props.projectCode}`)
+    .then((res) => {
+      setTaskList(res.data);
+    })
+    .catch(err => console.log(err));
+  })
+
   const [columns, setColumns] = useState([
     { id: '1', name:'📝 To Do', cards: [] },
     { id: '2', name: '🛠 In Progress', cards: [] },

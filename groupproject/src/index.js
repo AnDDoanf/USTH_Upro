@@ -24,7 +24,7 @@ function Main() {
         <Routes>
           <Route exact path="/" element={<Login onSubmit = {getData} />}/>
           <Route path="/homepage/*" element={<Homepage userCode = {userCode} onSubmit = {getCode}/>}/>
-          <Route path="/project/*" element={<Project projectCode = {projectCode}/>}/>
+          <Route path="/project/*" element={<Project projectCode = {projectCode} userCode = {userCode}/>}/>
         </Routes>
       </div>
     </BrowserRouter>
