@@ -169,12 +169,14 @@ app.post("/add_task", (req, res) => {
     });
 });
 
-// Add new project to homepage (ip)
+// Add new project to homepage
 app.post("/add_project", (req, res) => {
-    const user_code = req.body.memberAdd;
-    const project_code = req.body.projectAdd;
-    const sqlAddMember = "INSERT INTO project_member (user_code, project_code) VALUES (?, ?)";
-    db.query(sqlAddMember, [user_code, project_code], (error, result) => {
+    const project_name = req.body.projectName;
+    const project_type = req.body.projectType;
+    const project_description = req.body.projectDescription;
+    const project_created_date = req.body.projectCreatedDate;
+    const sqlAddProject = "INSERT INTO project_member (project_name, project_type, project_descrtiption, project_created_date) VALUES (?, ?, ?, ?)";
+    db.query(sqlAddProject, [project_name, project_type, project_description, project_created_date], (error, result) => {
         if (error) {
             console.log(error);
         }
@@ -207,16 +209,14 @@ app.put("/update_project/:project_code", (req, res) => {
     });
 });
 
-// Update task (ip)
-app.put("/update_task/:task_code", (req, res) => {
-    const {id} = req.params;
-    const {name, email, contact} = req.body;
-    const sqlUpdate = "UPDATE contact SET name=?, email=?, contact=? WHERE id=?";
-    db.query(sqlUpdate, [name, email, contact, id], (err, result) => {
-        if (err) {
+// Update task (except state)
+app.put("/update_task", (req, res) => {
+    const task_code = req.body.task_code;
+    const task_name = req.body.task_name;
+    const task_description = req.body.task_description;
+    const sqlUpdate = "UPDATE task SET task_name=?, task_description=? WHERE task_code=?";
+    db.query(sqlUpdate, [task_name,  task_description, task_code], (err) => {
             console.log(err);
-        } 
-        res.send(result);
     });
 });
 
@@ -231,11 +231,11 @@ app.delete("/delete_sprint/:sprint_code", (req, res) => {
     });
 });
 
-//Delete task (ip)
+//Delete task
 app.delete("/delete_task/:task_code", (req, res) => {
-    const {id} = req.params;
-    const sqlRemove = "DELETE FROM contact WHERE id=?";
-    db.query(sqlRemove, id, (error, result) => {
+    const {task_code} = req.params;
+    const sqlDeleteTask = "DELETE FROM task WHERE task_code="+task_code;
+    db.query(sqlDeleteTask, (error, result) => {
         if (error) {
             console.log(error);
         }

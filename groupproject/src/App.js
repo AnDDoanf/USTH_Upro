@@ -361,7 +361,7 @@ function Page1Content(props) {
       setTaskList(res.data);
     })
     .catch(err => console.log(err));
-  }, [props.projectCode])
+  })
 
   // get all tasks in project
   const [sprintCount, setSprintCount] = useState([]);
@@ -450,39 +450,37 @@ function Page1Content(props) {
               curSprint,
               newIssueState
             })
-            .then(() => {
-                this.name.value = "";
-                this.email.value = "";
-                this.contact.value = "";
-            })
             .catch((err) => console.log(err));
-
-    setShowIssueOverlay(false);
-          }
+      setShowIssueOverlay(false);
+    }
+    setIssueName(null);
+    setIssueStartDate(null);
+    setIssueDueDate(null);
+    setIssueDescription(null);
+    setIssuePriority(null);
+    setIssueAssignee(null);
   }
   const [selectedIssue, setSelectedIssue] = useState(null);
 
   const handleSelectIssue = (issue) => {
-    const selectedIssue = {
-      ...issue,
-      description: issue.description || ""
-    }
-    setSelectedIssue(selectedIssue);
+    setSelectedIssue(issue);
   }
 
-  const handleSaveIssue = (event) => {
-    event.preventDefault();
-    const updatedIssues = issues.map(issue => {
-        if (issue.id === selectedIssue.id) {
-            return {...issue, name: selectedIssue.name, description: selectedIssue.description};
-        }
-        return issue;
-    });
-    setIssues(updatedIssues);
-};
+  function handleUpdateTask(task) {
+    const task_code = task.task_code;
+    const task_description = task.task_description;
+    const task_name = task.task_name;
+    axios.put(`http://localhost:3001/update_task` , {
+      task_code,
+      task_description,
+      task_name
+    })
+    .catch((err) => console.log(err));
+    setSelectedIssue(null);
+  }
 
-const handleDeleteIssue = (id) => {
-  setIssues(issues.filter(issue => issue.id !== id));
+function handleDeleteIssue(id) {
+  axios.delete(`http://localhost:3001/delete_task/${id}`);
   setSelectedIssue(null);
 }
 
@@ -565,20 +563,20 @@ const handleDeleteIssue = (id) => {
                           <p>Create Task</p>
                         </div>
                         <div className="issue-overlay-body">
-                          <label htmlFor="">Issue Name</label>
-                          <input type="text" value={issueName} onChange={e => setIssueName(e.target.value)} placeholder="Type is here..." required />
+                          <label htmlFor="">Task Name</label>
+                          <input type="text" defaultValue = {""} value={issueName} onChange={e => setIssueName(e.target.value)} placeholder="Type in here..." required />
                           <label htmlFor="">Start Date?</label>
-                          <input type="date" value={issueStartDate} onChange={e => setIssueStartDate(e.target.value)} placeholder="Start date"  min={new Date().toISOString().split("T")[0]}/>
+                          <input type="date" defaultValue = {""} value={issueStartDate} onChange={e => setIssueStartDate(e.target.value)} placeholder="Start date"  min={new Date().toISOString().split("T")[0]}/>
                           <label htmlFor="">End Date?</label> 
-                          <input type="date" value={issueDueDate} onChange={e => setIssueDueDate(e.target.value)} placeholder="End date" min={sprintInfo.startDate} max={new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toISOString().split("T")[0]}/> 
+                          <input type="date" defaultValue = {""} value={issueDueDate} onChange={e => setIssueDueDate(e.target.value)} placeholder="End date" min={sprintInfo.startDate} max={new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toISOString().split("T")[0]}/> 
                           <label htmlFor="">Assignee</label>
-                          <input type="text" value={issueAssignee} onChange={e => setIssueAssignee(e.target.value)} placeholder="Type is here..." required />
+                          <input type="text" defaultValue = {""} value={issueAssignee} onChange={e => setIssueAssignee(e.target.value)} placeholder="Type in here..." required />
                           <label htmlFor="">Priority</label>
                           <select name="" defaultValue={"very high"} value={issuePriority} onChange={e => setIssuePriority(e.target.value)}>
-                            <option value="very high">Very High</option>
-                            <option value="high">High</option>
-                            <option value="medium">Medium</option>
-                            <option value="low">Low</option>
+                            <option value="very high">very high</option>
+                            <option value="high">high</option>
+                            <option value="medium">medium</option>
+                            <option value="low">low</option>
                           </select>
                         </div>
                         <div className="issue-overlay-footer">
@@ -602,17 +600,18 @@ const handleDeleteIssue = (id) => {
         ))}
       </div>
 
+      {/* Check task info */}
       <div className="worklist-right">
       {selectedIssue ? (
         <div>
-          <form onSubmit={handleSaveIssue}>
-            <label htmlFor="">Issue name:</label>
-            <input type="text" value={selectedIssue.name} onChange={e => setSelectedIssue({...selectedIssue, name: e.target.value})} placeholder="Issue name" required />
-            <label htmlFor="">Issue description:</label>
-            <textarea cols="15" rows="10"  value={selectedIssue.description} onChange={e => setSelectedIssue({...selectedIssue, description: e.target.value})} placeholder="Issue description" required />
+          <form onSubmit={() => {handleUpdateTask(selectedIssue)}}>
+            <label htmlFor="">Task name:</label>
+            <input type="text" value={selectedIssue.task_name} onChange={e => setSelectedIssue({...selectedIssue, task_name: e.target.value})} placeholder="Issue name" required />
+            <label htmlFor="">Task description:</label>
+            <textarea cols="15" rows="10"  value={selectedIssue.task_description} onChange={e => setSelectedIssue({...selectedIssue, task_description: e.target.value})} placeholder="Issue description" required />
             <div className="issue-information-button-container">
-              <button className='delete-issue-information-button' onClick={() => handleDeleteIssue(selectedIssue.id)}>Delete</button>
-              <button className='save-issue-information-button' onClick={handleSaveIssue} type="submit">Save</button>
+              <button className='delete-issue-information-button' onClick={() => handleDeleteIssue(selectedIssue.task_code)}>Delete</button>
+              <button className='save-issue-information-button' type='Submit'>Save</button>
             </div>
            
           </form>
