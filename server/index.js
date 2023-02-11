@@ -41,6 +41,17 @@ app.get("/get_user/user_code/:user_code", (req, res) => {
     });
 });
 
+//Get project
+app.get("/project", (req, res) => {
+    const sqlGetProject = "SELECT MAX(project_code) as project_code FROM project";
+    db.query(sqlGetProject, (err, result) => {
+        if (err) {
+            console.log("Get project by user code error: ",err);
+        }
+    res.send(result[0]);
+    });
+});
+
 //Get project by user_code
 app.get("/get_project/user_code/:user_code", (req, res) => {
     const {user_code} = req.params;
@@ -50,6 +61,17 @@ app.get("/get_project/user_code/:user_code", (req, res) => {
             console.log("Get project by user code error: ",err);
         }
     res.send(result[0]);
+    });
+});
+
+app.get("/get_project1/user_code/:user_code", (req, res) => {
+    const {user_code} = req.params;
+    const sqlGetProjectUserCode = "SELECT * FROM project WHERE project_leader = ?";
+    db.query(sqlGetProjectUserCode, user_code, (err, result) => {
+        if (err) {
+            console.log("Get project by user code error: ",err);
+        }
+    res.send(result);
     });
 });
 
@@ -171,12 +193,13 @@ app.post("/add_task", (req, res) => {
 
 // Add new project to homepage
 app.post("/add_project", (req, res) => {
-    const project_name = req.body.projectName;
-    const project_type = req.body.projectType;
-    const project_description = req.body.projectDescription;
-    const project_created_date = req.body.projectCreatedDate;
-    const sqlAddProject = "INSERT INTO project_member (project_name, project_type, project_descrtiption, project_created_date) VALUES (?, ?, ?, ?)";
-    db.query(sqlAddProject, [project_name, project_type, project_description, project_created_date], (error, result) => {
+    const project_name = req.body.newProjectName;
+    const project_type = req.body.newProjectType;
+    const project_description = req.body.newProjectDescription;
+    const project_created_date = req.body.newProjectCreatedDate;
+    const project_leader = req.body.newProjectLeader;
+    const sqlAddProject = "INSERT INTO project (project_name, project_type, project_description, project_created_date, project_leader) VALUES (?, ?, ?, ?,?)";
+    db.query(sqlAddProject, [project_name, project_type, project_description, project_created_date, project_leader], (error, result) => {
         if (error) {
             console.log(error);
         }

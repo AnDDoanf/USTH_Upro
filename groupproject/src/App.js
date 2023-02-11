@@ -16,16 +16,16 @@ import { v4 as uuidv4 } from 'uuid';
 function Homepage(props) {
 
   const history = useNavigate();
-    const handleHomepageToProject = useCallback(()=>{
-        history('/project')
-    });
+  const handleHomepageToProject = useCallback(()=>{
+      history('/project')
+  });
+
+  const history2 = useNavigate();
+  const handleReloadHomepage = useCallback(()=>{
+      history('/homepage')
+  });
 
   const [userName, setUserName] = useState(""); 
-
-  // 4 states below must have the same length == number of projects
-  const [projectNameList, setProjectNameList] = useState([]);
-  const [projectCodeList, setProjectCodeList] = useState([]);
-
   useEffect(() => {
     axios.get(`http://localhost:3001/get_user/user_code/${props.userCode}`)
     .then((res) => {
@@ -36,18 +36,28 @@ function Homepage(props) {
     .catch(err => console.log(err));
   }, [props.userCode])
 
+  const [projectList1, setProjectList1] = useState([]);
   useEffect(() => {
     axios.get(`http://localhost:3001/get_project/user_code/${props.userCode}`)
     .then((res) => {
-      res.data.map((item, i) => (
-          setProjectNameList(current => [...current, item.project_name]),
-          setProjectNameList(current => [...new Set(current)]),
-          setProjectCodeList(current => [...current, item.project_code]),
-          setProjectCodeList(current => [...new Set(current)])
-      ))
-    }, [])
+      setProjectList1(res.data);
+    })
     .catch(err => console.log(err));
-  }, [props.userCode])
+  })
+
+  const [projectList2, setProjectList2] = useState([]);
+  useEffect(() => {
+    axios.get(`http://localhost:3001/get_project1/user_code/${props.userCode}`)
+    .then((res) => {
+      setProjectList2(res.data);
+    })
+    .catch(err => console.log(err));
+  })
+
+  const [projectList, setProjectList] = useState([]);
+  useEffect(() => {
+    setProjectList([...projectList1, ...projectList2])
+  })
 
   const handleAccess = (a) => {
     props.onSubmit(a);
@@ -93,6 +103,36 @@ function Homepage(props) {
   };
   }, [dropdownRef, notificationDropdownRef]);
 
+  const [newProjectType, setNewProjectType] = useState("");
+  const [newProjectName, setNewProjectName] = useState("");
+  const [newProjectDescription, setNewProjectDescription] = useState("");
+  const newProjectCreatedDate = new Date().getFullYear()+"-"+new Date().getMonth()+"-"+new Date().getDate();;
+  const newProjectLeader = props.userCode;
+  function handleCreateProject() {
+    console.log(newProjectType)
+    if (!newProjectType || !newProjectCreatedDate || !newProjectType) {
+        console.log("Not enough infomations");
+    } else {
+      // POST request to create new data
+      axios.post("http://localhost:3001/add_project" , {
+        newProjectName,
+        newProjectType,
+        newProjectDescription,
+        newProjectCreatedDate,
+        newProjectLeader
+      })
+      .catch((err) => console.log(err));
+    }
+    document.getElementById("overlay").style.display = "none";
+  }
+  function handleUpdateNew() {
+    axios.get(`http://localhost:3001/project`)
+    .then((res) => {
+      const projectAdd = res.data.project_code;
+      console.log(projectAdd);
+    })
+    .catch(err => console.log(err));
+  }
 return(
 <div>
   <div className="navbar">
@@ -124,104 +164,79 @@ return(
           <div className="tooltip_user">profile</div>
         </div>
   </div>
-<div className="container1">
-  <div className="workspace1" onClick={hide_dropdown}>
-    <b>Hello {userName} </b>
-    <p>Recent project</p>
-  
-    <div className="project-card-container">
+  <div className="container1">
+    <div className="workspace1" onClick={hide_dropdown}>
+      <b>Hello {userName} </b>
+      <p>Recent project</p>
+    
+      <div className="project-card-container">
 
-{/* cards */}
-      {projectNameList.map((item, index) => (
-        <div className="project-card" onClick={() =>{handleAccess(projectCodeList[index]); handleHomepageToProject()}}>
-          <div className="project-card-header">
-            <div className="project-card-color-tag"></div>
-            <p>{item}</p>
-          </div>
-          <div className="project-card-body-01">
-            <p>My issues</p>
-            <div className="project-card-my-issues-number">
-              19
+  {/* cards */}
+        {projectList.map((item, index) => (
+          <div className="project-card" onClick={() =>{handleAccess(item.project_code); handleHomepageToProject()}}>
+            <div className="project-card-header">
+              <div className="project-card-color-tag"></div>
+              <p>{item.project_name}</p>
             </div>
-          </div>
-          <div className="project-card-body-02">
-            <p>Done issues</p>
-            <div className="project-card-done-issues-number">
-              100
+            {/* <div className="project-card-body-01">
+              <p>My issues</p>
+              <div className="project-card-my-issues-number">
+                19
+              </div>
             </div>
+            <div className="project-card-body-02">
+              <p>Done issues</p>
+              <div className="project-card-done-issues-number">
+                100
+              </div>
+            </div> */}
           </div>
-          
-          <div className="project-card-footer">
-            <button>Setting</button>
+        ))}
+  {/* cards */}
+              
+          </div>
+    </div>
+    <div className="footer">
+      <button onClick={show_modal} >Create New Project</button>
+    </div>
+    <div id ="overlay" className="overlay">
+      <div className="new-project-container"> 
+        <div className="new-project-header">
+          <div className="new-project-title">
+            Create Your Project
           </div>
         </div>
-      ))}
-{/* cards */}
-             
+                  
+        <div className="new-project-body">
+          <h1>Project details</h1>
+          <p>You can change these details anytime in your project settings.</p>
+          <div className="newproject-body-mid">
+            <div className="newproject-body-mid-left">
+              <p>Project Name</p>
+              <input type="text" defaultValue={""} value = {newProjectName} onChange={e => setNewProjectName(e.target.value)} placeholder='Project Name' />
+              {/* <p>Member</p>
+              <input type="text" defaultValue={""} value = {newProject.project_name} onChange={e => setNewProject({...newProject, project_name: e.target.value})} placeholder='Search for members' /> */}
+            </div>
+            <div className="newproject-body-mid-right">
+              <p>Major</p>
+              <select defaultValue= "ICT" value = {newProjectType} onChange={e => setNewProjectType(e.target.value)}>
+                <option value="ICT">Information and Communication Technology</option>
+                <option value="CS">Computer Science</option>
+              </select>
+            </div>
+          </div> 
+          <b>Description</b>
+          <textarea name="" id="" cols="30" rows="10" value = {newProjectDescription} onChange={e => setNewProjectDescription(e.target.value)}></textarea>
+        </div>
+        <div className="new-project-footer">
+          <button onClick={close_modal} >Cancel</button>  
+          <button onClick={() => {handleCreateProject(); handleUpdateNew()}}>Create</button>
         </div>
       </div>
-        <div className="footer">
-            <button onClick={show_modal} >Create New Project</button>
-        </div>
-        <div id ="overlay" className="overlay">
-      <div className="new-project-container">
-        
-                <div className="new-project-header">
-                  <div className="new-project-title">
-                    Create Your Project
-                  </div>
-                </div>
-                
-                <div className="new-project-body">
-                  <h1>Project details</h1>
-                  <p>You can change these details anytime in your project settings.</p>
-                  <div className="newproject-body-mid">
-
-                    <div className="newproject-body-mid-left">
-                      <p>Project Name</p>
-                      <input type="text" placeholder='Project Name' />
-                      <p>Key</p>
-                      <div className="key-field">
-                        <input type="text" placeholder='Key'/>
-                        <button>Generate</button>
-                      </div>
-                      <p>Project Lead</p>
-                      <select name="" id="">
-                        <option>Dinh Tuan Cuong</option>
-                        <option>Dinh Quang Son</option>
-                        <option>Nguyen The Thang</option>
-                        <option>Nguyen Hoai Phuong</option>
-                      </select>
-                    </div>
-
-                    <div className="newproject-body-mid-right">
-                      <p>Major</p>
-                      <select name="" id="">
-                        <option>Information and Communication Technology</option>
-                        <option>Computer Science</option>
-                      </select>
-                      <p>Year</p>
-                      <div className="year-field">
-                        <input type="number" min="2010" max="2099" step="1" placeholder="From" />
-                        -
-                        <input type="number" min="2010" max="2099" step="1" placeholder="To"/>
-                      </div>
-                      
-                    </div>
-
-                  </div> 
-                  <b>Description</b>
-                  <textarea name="" id="" cols="30" rows="10"></textarea>
-                </div>
-                <div className="new-project-footer">
-                  <button onClick={close_modal} >Cancel</button>
-                  <button>Create</button>
-                </div>
-            </div>
-        </div>
     </div>
-    </div>
-  );
+  </div>
+</div>
+);
 }
 
 // Header and left menu
@@ -275,7 +290,6 @@ function Project(props) {
   return (
 
     <div className="app"> 
-
       <div className="navbar">
         <div className="logo" onClick={handleNavbarToHomePage}>Upro</div>
         <div className="search-bar"><input type="search" placeholder='Searching project...' /></div>
@@ -428,7 +442,6 @@ function Page1Content(props) {
   const userCode = props.userCode;
   const newIssueState = "waiting"
   const [curSprint, setCurSprint] = useState("");
-  const [issues, setIssues] = useState([]);
 
   const handleCreateIssue = () => {
     setShowIssueOverlay(true);
