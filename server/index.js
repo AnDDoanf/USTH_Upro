@@ -41,18 +41,7 @@ app.get("/get_user/user_code/:user_code", (req, res) => {
     });
 });
 
-//Get project
-app.get("/project", (req, res) => {
-    const sqlGetProject = "SELECT MAX(project_code) as project_code FROM project";
-    db.query(sqlGetProject, (err, result) => {
-        if (err) {
-            console.log("Get project by user code error: ",err);
-        }
-    res.send(result[0]);
-    });
-});
-
-//Get project by user_code
+//Get project by user_code (not leader)
 app.get("/get_project/user_code/:user_code", (req, res) => {
     const {user_code} = req.params;
     const sqlGetProjectUserCode = "CALL pu("+user_code+")";
@@ -64,6 +53,7 @@ app.get("/get_project/user_code/:user_code", (req, res) => {
     });
 });
 
+//Get project by user_code (is leader)
 app.get("/get_project1/user_code/:user_code", (req, res) => {
     const {user_code} = req.params;
     const sqlGetProjectUserCode = "SELECT * FROM project WHERE project_leader = ?";
@@ -206,12 +196,12 @@ app.post("/add_project", (req, res) => {
     });
 });
 
-// Update profile (ip)
+// Update profile
 app.put("/update_profile/:user_code", (req, res) => {
-    const {id} = req.params;
-    const {name, email, contact} = req.body;
-    const sqlUpdate = "UPDATE contact SET name=?, email=?, contact=? WHERE id=?";
-    db.query(sqlUpdate, [name, email, contact, id], (err, result) => {
+    const {user_code} = req.params;
+    const {user_name, user_email, user_dob, user_password, user_description} = req.body;
+    const sqlUpdate = "UPDATE user SET user_name=?, user_email=?, user_dob=?, user_password=?, user_description WHERE id=?";
+    db.query(sqlUpdate, [user_name, user_email, user_dob, user_password, user_description,user_cde], (err, result) => {
         if (err) {
             console.log(err);
         } 
@@ -221,10 +211,10 @@ app.put("/update_profile/:user_code", (req, res) => {
 
 // Update project (ip)
 app.put("/update_project/:project_code", (req, res) => {
-    const {id} = req.params;
-    const {name, email, contact} = req.body;
-    const sqlUpdate = "UPDATE contact SET name=?, email=?, contact=? WHERE id=?";
-    db.query(sqlUpdate, [name, email, contact, id], (err, result) => {
+    const {project_code} = req.params;
+    const {project_name,project_type , project_description } = req.body;
+    const sqlUpdate = "UPDATE project SET project_name=?,project_type = ?, project_description = ? WHERE id=?";
+    db.query(sqlUpdate, [project_name,project_type , project_description, project_code], (err, result) => {
         if (err) {
             console.log(err);
         } 

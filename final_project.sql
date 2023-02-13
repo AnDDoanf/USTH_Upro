@@ -2,10 +2,10 @@
 -- version 5.2.0
 -- https://www.phpmyadmin.net/
 --
--- Máy chủ: 127.0.0.1:3307
--- Thời gian đã tạo: Th1 17, 2023 lúc 03:45 PM
--- Phiên bản máy phục vụ: 10.4.25-MariaDB
--- Phiên bản PHP: 8.1.10
+-- Host: 127.0.0.1:3307
+-- Generation Time: Feb 13, 2023 at 05:09 PM
+-- Server version: 10.4.25-MariaDB
+-- PHP Version: 8.1.10
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -18,12 +18,12 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- Cơ sở dữ liệu: `final_project`
+-- Database: `final_project`
 --
 
 DELIMITER $$
 --
--- Thủ tục
+-- Procedures
 --
 CREATE DEFINER=`root`@`localhost` PROCEDURE `ptp` (IN `code` VARCHAR(20))   SELECT * FROM task
 RIGHT JOIN sprint
@@ -49,7 +49,7 @@ DELIMITER ;
 -- --------------------------------------------------------
 
 --
--- Cấu trúc bảng cho bảng `attached_file`
+-- Table structure for table `attached_file`
 --
 
 CREATE TABLE `attached_file` (
@@ -64,7 +64,7 @@ CREATE TABLE `attached_file` (
 -- --------------------------------------------------------
 
 --
--- Cấu trúc bảng cho bảng `comment`
+-- Table structure for table `comment`
 --
 
 CREATE TABLE `comment` (
@@ -78,7 +78,7 @@ CREATE TABLE `comment` (
 -- --------------------------------------------------------
 
 --
--- Cấu trúc bảng cho bảng `enviroment`
+-- Table structure for table `enviroment`
 --
 
 CREATE TABLE `enviroment` (
@@ -89,7 +89,7 @@ CREATE TABLE `enviroment` (
 -- --------------------------------------------------------
 
 --
--- Cấu trúc bảng cho bảng `history`
+-- Table structure for table `history`
 --
 
 CREATE TABLE `history` (
@@ -103,7 +103,7 @@ CREATE TABLE `history` (
 -- --------------------------------------------------------
 
 --
--- Cấu trúc bảng cho bảng `label`
+-- Table structure for table `label`
 --
 
 CREATE TABLE `label` (
@@ -114,7 +114,7 @@ CREATE TABLE `label` (
 -- --------------------------------------------------------
 
 --
--- Cấu trúc bảng cho bảng `notification`
+-- Table structure for table `notification`
 --
 
 CREATE TABLE `notification` (
@@ -128,107 +128,115 @@ CREATE TABLE `notification` (
 -- --------------------------------------------------------
 
 --
--- Cấu trúc bảng cho bảng `project`
+-- Table structure for table `project`
 --
 
 CREATE TABLE `project` (
-  `project_code` varchar(20) NOT NULL,
+  `project_code` int(20) NOT NULL,
   `project_name` varchar(20) NOT NULL,
   `project_type` varchar(20) NOT NULL,
   `project_description` varchar(100) NOT NULL,
-  `project_created_date` date NOT NULL
+  `project_created_date` date NOT NULL,
+  `project_leader` int(20) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 --
--- Đang đổ dữ liệu cho bảng `project`
+-- Dumping data for table `project`
 --
 
-INSERT INTO `project` (`project_code`, `project_name`, `project_type`, `project_description`, `project_created_date`) VALUES
-('p1', 'test1', 'ICT', 'Lovely1', '2022-11-11'),
-('p2', 'test2', 'ICT', 'lovely one', '2022-12-12');
+INSERT INTO `project` (`project_code`, `project_name`, `project_type`, `project_description`, `project_created_date`, `project_leader`) VALUES
+(1, 'test1', 'ICT', 'Lovely1', '2022-11-11', 5),
+(2, 'test2', 'ICT', 'lovely one', '2022-12-12', 4),
+(10, 'task3 ', 'CS', 'task3', '2023-01-11', 1),
+(11, 'task4', 'CS', 'hihihi', '2023-01-11', 1);
 
 -- --------------------------------------------------------
 
 --
--- Cấu trúc bảng cho bảng `project_member`
+-- Table structure for table `project_member`
 --
 
 CREATE TABLE `project_member` (
-  `user_code` varchar(20) NOT NULL,
-  `project_code` varchar(20) NOT NULL
+  `user_code` int(20) NOT NULL,
+  `project_code` int(20) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 --
--- Đang đổ dữ liệu cho bảng `project_member`
+-- Dumping data for table `project_member`
 --
 
 INSERT INTO `project_member` (`user_code`, `project_code`) VALUES
-('2', 'p2'),
-('3', 'p1'),
-('4', 'p1'),
-('1', 'p1'),
-('1', 'p2'),
-('6', 'p1'),
-('6', 'p1');
+(1, 1),
+(2, 1),
+(2, 2),
+(3, 1),
+(1, 2);
 
 -- --------------------------------------------------------
 
 --
--- Cấu trúc bảng cho bảng `sprint`
+-- Table structure for table `sprint`
 --
 
 CREATE TABLE `sprint` (
   `project_code` varchar(20) NOT NULL,
-  `sprint_code` varchar(20) NOT NULL,
+  `sprint_code` int(20) NOT NULL,
   `sprint_start_date` date NOT NULL,
   `sprint_due_date` date NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 --
--- Đang đổ dữ liệu cho bảng `sprint`
+-- Dumping data for table `sprint`
 --
 
 INSERT INTO `sprint` (`project_code`, `sprint_code`, `sprint_start_date`, `sprint_due_date`) VALUES
-('p1', 's1', '2022-12-11', '2022-12-25'),
-('p1', 's2', '2022-12-25', '2022-12-31'),
-('p2', 's3', '2022-12-14', '2022-12-21');
+('1', 1, '2022-12-11', '2022-12-25'),
+('1', 2, '2022-12-25', '2022-12-31'),
+('2', 3, '2022-12-14', '2022-12-21'),
+('1', 5, '2023-03-20', '2023-03-27');
 
 -- --------------------------------------------------------
 
 --
--- Cấu trúc bảng cho bảng `task`
+-- Table structure for table `task`
 --
 
 CREATE TABLE `task` (
-  `task_code` varchar(20) NOT NULL,
+  `task_code` int(20) NOT NULL,
   `task_name` varchar(200) NOT NULL,
   `task_start_date` date NOT NULL,
   `task_due_date` date NOT NULL,
   `task_description` varchar(200) NOT NULL,
   `task_priority` varchar(20) NOT NULL,
   `user_code` varchar(20) NOT NULL,
-  `sprint_code` varchar(20) NOT NULL,
+  `sprint_code` int(20) NOT NULL,
   `state` varchar(20) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 --
--- Đang đổ dữ liệu cho bảng `task`
+-- Dumping data for table `task`
 --
 
 INSERT INTO `task` (`task_code`, `task_name`, `task_start_date`, `task_due_date`, `task_description`, `task_priority`, `user_code`, `sprint_code`, `state`) VALUES
-('t1', 'tasktest1', '2022-12-13', '2022-12-14', 'lovely one', 'high', '1', 's1', 'in progress'),
-('t2', 'tasktest2', '2022-11-10', '2022-11-14', 'lovely one', 'low', '3', 's1', 'in progress'),
-('t3', 'tasktest3', '2022-12-14', '2022-12-15', 'lovely one', 'high', '1', 's3', 'in progress'),
-('t4', 'tasktest4', '2022-12-24', '2022-12-28', 'lovely one', 'low', '1', 's2', 'in progress');
+(2, 'tasktest4', '2022-11-10', '2022-11-14', 'lovely lovely', 'low', '3', 1, 'in progress'),
+(3, 'tasktest1', '2022-12-14', '2022-12-15', 'lovely one', 'high', '2', 3, 'in progress'),
+(4, 'tasktest5', '2022-12-24', '2022-12-28', 'lovely one', 'low', '1', 2, 'in progress'),
+(7, 'tasktest3', '2023-02-10', '2023-02-19', 'lovely one', '', '1', 1, 'to do'),
+(10, 'tasktest8', '2023-02-10', '2023-02-09', 'lovely one', 'medium', '1', 5, 'to do'),
+(13, 'tasktest9', '2023-02-10', '2023-02-20', 'lovely one', 'high', '1', 5, 'to do'),
+(16, 'tasktest6', '2023-02-10', '2023-02-17', 'lovely one', 'high', '1', 2, 'to do'),
+(17, 'tasktest10', '2023-02-10', '2023-02-11', 'lovely one', 'high', '1', 5, 'to do'),
+(20, 'tasktest7', '2023-02-10', '2023-02-11', 'lovely one', 'high', '1', 2, 'to do'),
+(21, 'tasktest1', '2023-02-10', '2023-03-10', 'hello', 'high', '1', 1, 'to do');
 
 -- --------------------------------------------------------
 
 --
--- Cấu trúc bảng cho bảng `user`
+-- Table structure for table `user`
 --
 
 CREATE TABLE `user` (
-  `user_code` varchar(20) NOT NULL,
+  `user_code` int(20) NOT NULL,
   `user_name` varchar(20) NOT NULL,
   `user_mail` varchar(40) NOT NULL,
   `user_dob` date NOT NULL,
@@ -238,149 +246,108 @@ CREATE TABLE `user` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 --
--- Đang đổ dữ liệu cho bảng `user`
+-- Dumping data for table `user`
 --
 
 INSERT INTO `user` (`user_code`, `user_name`, `user_mail`, `user_dob`, `user_password`, `user_description`, `user_avatar`) VALUES
-('1', 'AnDoan', 'andt.bi11-002@st.usth.edu.vn', '2002-01-24', '123321', 'Vietnamien', 'NA'),
-('2', 'CuongDinh', 'cuongdt.ba10-007@st.usth.edu.vn', '2001-01-01', '123321', 'NA', 'NA'),
-('3', 'ThangNguyen', 'thangnt.ba10-057@st.usth.edu.vn', '2001-02-03', '123333', 'NA', 'NA'),
-('4', 'SonDinh', 'sondq.ba10-050@st.usth.edu.vn', '2001-02-02', '123123', 'NA', 'NA'),
-('5', 'PhuongNguyen', 'phuongnh.ba10-046@st.usth.edu.vn', '2001-10-10', '123111', 'NA', 'NA'),
-('6', 'ChiDo', 'chidh.bi11-043@st.usth.edu.vn', '2002-05-06', '111222', 'NA', 'NA'),
-('a', '[value-2]', '[value-3]', '0000-00-00', '[value-5]', '[value-6]', '[value-7]');
+(1, 'AnDoan', 'andt.bi11-002@st.usth.edu.vn', '2002-01-24', '123321', 'Vietnamien', 'NA'),
+(2, 'CuongDinh', 'cuongdt.ba10-007@st.usth.edu.vn', '2001-01-01', '123321', 'NA', 'NA'),
+(3, 'ThangNguyen', 'thangnt.ba10-057@st.usth.edu.vn', '2001-02-03', '123333', 'NA', 'NA'),
+(4, 'SonDinh', 'sondq.ba10-050@st.usth.edu.vn', '2001-02-02', '123123', 'NA', 'NA'),
+(5, 'PhuongNguyen', 'phuongnh.ba10-046@st.usth.edu.vn', '2001-10-10', '123111', 'NA', 'NA'),
+(6, 'ChiDo', 'chidh.bi11-043@st.usth.edu.vn', '2002-05-06', '111222', 'NA', 'NA');
 
 --
--- Chỉ mục cho các bảng đã đổ
+-- Indexes for dumped tables
 --
 
 --
--- Chỉ mục cho bảng `attached_file`
+-- Indexes for table `attached_file`
 --
 ALTER TABLE `attached_file`
   ADD PRIMARY KEY (`file_code`);
 
 --
--- Chỉ mục cho bảng `comment`
+-- Indexes for table `comment`
 --
 ALTER TABLE `comment`
-  ADD PRIMARY KEY (`comment_code`),
-  ADD KEY `fk_user1` (`user_code`),
-  ADD KEY `fk_task1` (`task_code`);
+  ADD PRIMARY KEY (`comment_code`);
 
 --
--- Chỉ mục cho bảng `enviroment`
+-- Indexes for table `enviroment`
 --
 ALTER TABLE `enviroment`
   ADD PRIMARY KEY (`enviroment_type`);
 
 --
--- Chỉ mục cho bảng `history`
+-- Indexes for table `history`
 --
 ALTER TABLE `history`
   ADD PRIMARY KEY (`history_code`);
 
 --
--- Chỉ mục cho bảng `label`
+-- Indexes for table `label`
 --
 ALTER TABLE `label`
   ADD KEY `task_code` (`task_code`);
 
 --
--- Chỉ mục cho bảng `notification`
+-- Indexes for table `notification`
 --
 ALTER TABLE `notification`
   ADD PRIMARY KEY (`notification_code`);
 
 --
--- Chỉ mục cho bảng `project`
+-- Indexes for table `project`
 --
 ALTER TABLE `project`
   ADD PRIMARY KEY (`project_code`);
 
 --
--- Chỉ mục cho bảng `sprint`
+-- Indexes for table `sprint`
 --
 ALTER TABLE `sprint`
   ADD PRIMARY KEY (`sprint_code`);
 
 --
--- Chỉ mục cho bảng `task`
+-- Indexes for table `task`
 --
 ALTER TABLE `task`
-  ADD PRIMARY KEY (`task_code`),
-  ADD KEY `fk_sprint` (`sprint_code`),
-  ADD KEY `fk_user7` (`user_code`);
+  ADD PRIMARY KEY (`task_code`);
 
 --
--- Chỉ mục cho bảng `user`
+-- Indexes for table `user`
 --
 ALTER TABLE `user`
   ADD PRIMARY KEY (`user_code`);
 
 --
--- Các ràng buộc cho các bảng đã đổ
+-- AUTO_INCREMENT for dumped tables
 --
 
 --
--- Các ràng buộc cho bảng `attached_file`
+-- AUTO_INCREMENT for table `project`
 --
-ALTER TABLE `attached_file`
-  ADD CONSTRAINT `fk_task` FOREIGN KEY (`task_code`) REFERENCES `task` (`task_code`),
-  ADD CONSTRAINT `fk_user` FOREIGN KEY (`user_code`) REFERENCES `user` (`user_code`);
+ALTER TABLE `project`
+  MODIFY `project_code` int(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
 
 --
--- Các ràng buộc cho bảng `comment`
---
-ALTER TABLE `comment`
-  ADD CONSTRAINT `fk_task1` FOREIGN KEY (`task_code`) REFERENCES `task` (`task_code`),
-  ADD CONSTRAINT `fk_user1` FOREIGN KEY (`user_code`) REFERENCES `user` (`user_code`);
-
---
--- Các ràng buộc cho bảng `enviroment`
---
-ALTER TABLE `enviroment`
-  ADD CONSTRAINT `fk_user2` FOREIGN KEY (`user_code`) REFERENCES `user` (`user_code`);
-
---
--- Các ràng buộc cho bảng `history`
---
-ALTER TABLE `history`
-  ADD CONSTRAINT `fk_task2` FOREIGN KEY (`task_code`) REFERENCES `task` (`task_code`),
-  ADD CONSTRAINT `fk_user3` FOREIGN KEY (`user_code`) REFERENCES `user` (`user_code`);
-
---
--- Các ràng buộc cho bảng `label`
---
-ALTER TABLE `label`
-  ADD CONSTRAINT `fk_task3` FOREIGN KEY (`task_code`) REFERENCES `task` (`task_code`);
-
---
--- Các ràng buộc cho bảng `notification`
---
-ALTER TABLE `notification`
-  ADD CONSTRAINT `fk_his` FOREIGN KEY (`history_code`) REFERENCES `history` (`history_code`),
-  ADD CONSTRAINT `fk_user4` FOREIGN KEY (`user_code`) REFERENCES `user` (`user_code`);
-
---
--- Các ràng buộc cho bảng `project_member`
---
-ALTER TABLE `project_member`
-  ADD CONSTRAINT `fk_project` FOREIGN KEY (`project_code`) REFERENCES `project` (`project_code`),
-  ADD CONSTRAINT `fk_user5` FOREIGN KEY (`user_code`) REFERENCES `user` (`user_code`);
-
---
--- Các ràng buộc cho bảng `sprint`
+-- AUTO_INCREMENT for table `sprint`
 --
 ALTER TABLE `sprint`
-  ADD CONSTRAINT `fk_project1` FOREIGN KEY (`project_code`) REFERENCES `project` (`project_code`);
+  MODIFY `sprint_code` int(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
--- Các ràng buộc cho bảng `task`
+-- AUTO_INCREMENT for table `task`
 --
 ALTER TABLE `task`
-  ADD CONSTRAINT `fk_sprint` FOREIGN KEY (`sprint_code`) REFERENCES `sprint` (`sprint_code`),
-  ADD CONSTRAINT `fk_user7` FOREIGN KEY (`user_code`) REFERENCES `user` (`user_code`);
+  MODIFY `task_code` int(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=23;
+
+--
+-- AUTO_INCREMENT for table `user`
+--
+ALTER TABLE `user`
+  MODIFY `user_code` int(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

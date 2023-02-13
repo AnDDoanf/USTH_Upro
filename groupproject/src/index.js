@@ -1,7 +1,7 @@
 import React, { useState} from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
-import { Project, Homepage } from './App';
+import { Project, Homepage, LandingPage } from './App';
 import Login from './login/index';
 import reportWebVitals from './reportWebVitals';
 import { BrowserRouter, Routes, Route} from "react-router-dom";
@@ -22,6 +22,7 @@ function Main() {
       <BrowserRouter>
       <div className="App">
         <Routes>
+          {/* <Route exact path='/' element={<LandingPage/>}/> */}
           <Route exact path="/" element={<Login onSubmit = {getData} />}/>
           <Route path="/homepage/*" element={<Homepage userCode = {userCode} onSubmit = {getCode}/>}/>
           <Route path="/project/*" element={<Project projectCode = {projectCode} userCode = {userCode}/>}/>

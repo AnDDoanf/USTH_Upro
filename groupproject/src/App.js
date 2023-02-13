@@ -12,17 +12,23 @@ import axios from 'axios';
 import { v4 as uuidv4 } from 'uuid';
 
 
+// function LandingPage() {
+//   const page =require('./UPRO/index.html');
+//   const history = useNavigate();
+//   const handleToLogin = useCallback(()=>{
+//       history('/login')
+//   });
+//   return (
+//     <iframe src={page}></iframe>
+//   );
+// }
+
 // Header and Homepage
 function Homepage(props) {
 
   const history = useNavigate();
   const handleHomepageToProject = useCallback(()=>{
       history('/project')
-  });
-
-  const history2 = useNavigate();
-  const handleReloadHomepage = useCallback(()=>{
-      history('/homepage')
   });
 
   const [userName, setUserName] = useState(""); 
@@ -56,7 +62,7 @@ function Homepage(props) {
 
   const [projectList, setProjectList] = useState([]);
   useEffect(() => {
-    setProjectList([...projectList1, ...projectList2])
+    setProjectList([...projectList1, ...projectList2]);
   })
 
   const handleAccess = (a) => {
@@ -178,18 +184,18 @@ return(
               <div className="project-card-color-tag"></div>
               <p>{item.project_name}</p>
             </div>
-            {/* <div className="project-card-body-01">
-              <p>My issues</p>
+            <div className="project-card-body-01">
+              {/* <p>My issues</p> */}
               <div className="project-card-my-issues-number">
-                19
+                {/* 19 */}
               </div>
             </div>
             <div className="project-card-body-02">
-              <p>Done issues</p>
+              {/* <p>Done issues</p> */}
               <div className="project-card-done-issues-number">
-                100
+                {/* 100 */}
               </div>
-            </div> */}
+            </div>
           </div>
         ))}
   {/* cards */}
@@ -287,6 +293,53 @@ function Project(props) {
       history('/homepage')
   });
 
+  // Get project's members
+  const [memberList, setMemberList] = useState([]);
+  useEffect(() => {
+    axios.get(`http://localhost:3001/get_member/project_code/${props.projectCode}`)
+    .then((res) => {
+      res.data.map((item, i) => (
+        setMemberList(current => [...current, item.user_name]),
+        setMemberList(current => [...new Set(current)])
+      ))
+    })
+    .catch(err => console.log(err));
+  }, [props.projectCode])
+
+
+  //Search user
+  const [searchMail, setSearchMail] = useState([]);
+  const [search, setSearch] = useState("");
+  useEffect(() => {
+    axios.get(`http://localhost:3001/get_user/user_mail/${searchMail}`)
+    .then((res) => {
+      setSearch(res.data)
+    })
+    .catch(err => console.log(err));
+  }, [searchMail])
+
+  function handleAddMember() {
+    if (search.length === 0) {
+      console.log("No email match");
+    } else {
+      if (memberList.indexOf(search[0].user_name) === -1) {
+        const memberAdd = search[0].user_code;
+        const projectAdd = props.projectCode;
+        axios.post("http://localhost:3001/add_member" , {
+                    memberAdd,
+                    projectAdd
+                })
+                .then(() => {
+                    setSearch("");
+                })
+                .catch((err) => console.log(err));
+        console.log("Add successfully");
+      } else {
+        console.log("user already in this project");
+      }
+    }
+  } 
+
   return (
 
     <div className="app"> 
@@ -342,6 +395,20 @@ function Project(props) {
             <img src={setting} alt="" />
             <button>Setting</button>
           </div>
+          <div className="setting-btn">
+            <input onChange={(event) => {
+                setSearchMail(event.target.value);
+                }} 
+                style = {{border: "none", padding: "20px"}}
+                value={searchMail} 
+                type="text" 
+                placeholder="Add people."/>
+                  <div className="add-people-footer">
+                    <button>Cancel</button>
+                    <button onClick={handleAddMember}>Add</button>
+                  </div>
+          </div>
+
         </div>
       </div>
 
@@ -641,7 +708,15 @@ function handleDeleteIssue(id) {
 
 //  Board
 function Page2Content(props) {
- 
+
+
+  const [columns, setColumns] = useState([
+    { id: '1', name:'📝 To Do', cards: [] },
+    { id: '2', name: '🛠 In Progress', cards: [] },
+    { id: '3', name: '🔍 QA', cards: [] },
+    { id: '4', name: '☑️ Done', cards: [] }
+  ]);
+
   // get all tasks in project
   const [taskList, setTaskList] = useState([]);
   useEffect(() => {
@@ -650,35 +725,25 @@ function Page2Content(props) {
       setTaskList(res.data);
     })
     .catch(err => console.log(err));
-  })
 
-  const [columns, setColumns] = useState([
-    { id: '1', name:'📝 To Do', cards: [] },
-    { id: '2', name: '🛠 In Progress', cards: [] },
-    { id: '3', name: '🔍 QA', cards: [] },
-    { id: '4', name: '☑️ Done', cards: [] }
-  ]);
+    taskList.map((task) => {
+      task.id = uuidv4();
+    });
+
+    const todoTask = Object.values(taskList.filter(task => task.state == "to do"));
+    const inProgressTask = Object.values(taskList.filter(task => task.state == "in progress"));
+    const QATask = Object.values(taskList.filter(task => task.state == "QA"));
+    const doneTask = Object.values(taskList.filter(task => task.state == "done"));
+    columns[0].cards = todoTask;
+    columns[1].cards = inProgressTask;
+    columns[2].cards = QATask;
+    columns[3].cards = doneTask;
+  }); 
+  
+  
   const [selectedCard, setSelectedCard] = useState(null);
   const [cardDescription, setCardDescription] = useState('');
 
-  const handleAddColumn = () => {
-    setColumns([
-      ...columns,
-      { id: uuidv4(), cards: [] }
-    ]);
-  };
- 
- 
-  const handleColumnNameChange = (columnId, newName) => {
-    const updatedColumns = columns.map(column => {
-      if (column.id === columnId) {
-        return { ...column, name: newName };
-      }
-      return column;
-    });
-    setColumns(updatedColumns);
-  };
- 
   const handleAddCard = () => {
     const updatedColumns = columns.map((column, index) => {
       if (index === 0) {
@@ -786,6 +851,7 @@ function Page2Content(props) {
       });
       setColumns(updatedColumns);
     } else {
+
       // the card was dropped in a different column
       const sourceColumn = columns.find(column => column.id === source.droppableId);
       const destinationColumn = columns.find(
@@ -852,8 +918,8 @@ function Page2Content(props) {
     <DragDropContext onDragEnd={onDragEnd}>
     <div className="column-wrapper">
       <div className='board-button-container'>
-        <button className="add-column-button" onClick={handleAddColumn}>Create New Column</button>
-        <button className="add-task-button" onClick={handleAddCard}>Create New Task</button>
+        {/* <button className="add-column-button" onClick={handleAddColumn}>Create New Column</button> */}
+        {/* <button className="add-task-button" onClick={handleAddCard}>Create New Task</button> */}
       </div>
       <div className="column-container">
         {columns.map((column, index) => (
@@ -865,7 +931,7 @@ function Page2Content(props) {
                 className="column"
               >
                 <div className='column-name-container'>
-                  <input type="text" value={column.name} onChange={e => handleColumnNameChange(column.id, e.target.value)}/>
+                  <div style={{marginTop: "7px"}}>{column.name}</div>
                   <div className="card-count-container">
                     <div className="card-count">
                       {column.cards.length}
@@ -879,8 +945,8 @@ function Page2Content(props) {
                   <Draggable draggableId={card.id} index={index} key={card.id}>
                     {(provided, snapshot) => (
                       <div ref={provided.innerRef} {...provided.draggableProps} {...provided.dragHandleProps} className="card" id={`card-${card.id}`} >
-                        <textarea cols="1" rows="3" type="text" value={card.text} onChange={e => handleCardNameChange(card.id, e.target.value)} onClick={handleCardNameInputClick}/>
-                        <button onClick={() => handleCardClick(card)}>Detail</button>
+                        <textarea cols="1" rows="3" type="text" value={card.task_name} onChange={e => handleCardNameChange(card.id, e.target.value)} onClick={handleCardNameInputClick}/>
+                        {/* <button onClick={() => handleCardClick(card)}></button> */}
                       </div>
                     )}
                   </Draggable>
@@ -1020,6 +1086,7 @@ function Page4Content() {
 }
 
 export {
+  // LandingPage,
   Homepage,
   Project,
 }
